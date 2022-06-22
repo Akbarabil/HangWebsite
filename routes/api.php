@@ -44,4 +44,5 @@ Route::middleware(['checkAuthApi'])->group(function(){
 
     //API SHOP
     Route::post("shop", 'api\ShopApi@store');
+    Route::get("shop", 'api\ShopApi@list_store');
 });

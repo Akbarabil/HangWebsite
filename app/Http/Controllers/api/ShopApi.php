@@ -116,4 +116,76 @@ class ShopApi extends Controller
             ], $exp->getCode());
         }
     }
+
+    public function list_store(Request $req)
+    {
+        try {
+            $validator = Validator::make($req->all(), [
+                'lat_user'           => 'required|numeric',
+                'lng_user'             => 'required|numeric',
+                'district_user'            => 'required|numeric'
+            ], [
+                'required'  => 'Parameter :attribute tidak boleh kosong!',
+                'string'    => 'Parameter :attribute harus bertipe string!',
+                'numeric'    => 'Parameter :attribute harus bertipe angka!',
+            ]);
+            
+            $latitude = $req->get('lat_user'); // "-7.965769846888459"
+            $longitude = $req->get('lng_user'); // "112.60750389398623"
+            $id_district = $req->get('district_user');
+
+            if ($validator->fails()) {
+                return response([
+                    "status_code"       => 400,
+                    "status_message"    => $validator->errors()->first()
+                ], 400);
+            }
+
+            $shop = DB::table("md_shop")
+                ->select("md_shop.*")
+                ->selectRaw("ST_DISTANCE_SPHERE(
+                    point('$longitude', '$latitude'),
+                    point(md_shop.LONG_SHOP, md_shop.LAT_SHOP)
+                )  AS DISTANCE_SHOP")
+                ->where('md_shop.ID_DISTRICT', '=', $id_district)
+                ->orderBy('DISTANCE_SHOP', 'asc')
+                ->paginate(10);
+
+            $dataRespon = array();
+            foreach ($shop->items() as $shopData) {
+                array_push(
+                    $dataRespon,
+                    array(
+                        "ID_SHOP" => $shopData->ID_SHOP,
+                        "PHOTO_SHOP" => $shopData->PHOTO_SHOP,
+                        "NAME_SHOP" => $shopData->NAME_SHOP,
+                        "OWNER_SHOP" => $shopData->OWNER_SHOP,
+                        "DISTANCE_SHOP" => number_format($shopData->DISTANCE_SHOP, 2, '.', '')
+                    )
+                );
+            }
+           
+
+            $dataPagination = array();
+            array_push(
+                $dataPagination,
+                array(
+                    "TOTAL_PAGE" => $shop->total(),
+                    "PAGE" => $shop->currentPage()
+                )
+            );
+
+            return response([
+                'status_code'       => 200,
+                'status_message'    => 'Data berhasil diambil!',
+                'data'              => $dataRespon,
+                'status_pagination' => $dataPagination
+            ], 200);
+        } catch (Exception $exp) {
+            return response([
+                'status_code'       => 500,
+                'status_message'    => $exp->getMessage(),
+            ], 500);
+        }
+    }
 }
