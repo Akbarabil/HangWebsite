@@ -53,7 +53,7 @@ class PresenceApi extends Controller
             ], 500);
         }
     }
-
+ 
     public function store(Request $req){
         try {
             $validator = Validator::make($req->all(), [
