@@ -122,6 +122,25 @@ class PresenceApi extends Controller
                     $presence->IS_FAKE              = $req->filled('fake_status') ? $req->input('fake_status') : '0';
                     $presence->save();
 
+                    $detLoc = DB::select("
+                        SELECT ma.NAME_AREA , mr.NAME_REGIONAL , ml.NAME_LOCATION 
+                        FROM md_district md 
+                        INNER JOIN md_area ma
+                            ON md.ID_DISTRICT = " . $district->ID_DISTRICT . " AND ma.ID_AREA = md.ID_AREA 
+                        INNER JOIN md_regional mr 
+                            ON mr.ID_REGIONAL = ma.ID_REGIONAL 
+                        INNER JOIN md_location ml 
+                            ON ml.ID_LOCATION = mr.ID_LOCATION
+                    ");
+
+                    $transDaily = new TransactionDaily();
+                    $transDaily->ID_USER     = $req->input('id_user');
+                    $transDaily->DATE_TD     = $currDate;
+                    $transDaily->AREA_TD     = $detLoc[0]->NAME_AREA;
+                    $transDaily->REGIONAL_TD = $detLoc[0]->NAME_REGIONAL;
+                    $transDaily->LOCATION_TD = $detLoc[0]->NAME_LOCATION;
+                    $transDaily->save();
+
                     return response([
                         "status_code"       => 200,
                         "status_message"    => 'Data berhasil disimpan!',
