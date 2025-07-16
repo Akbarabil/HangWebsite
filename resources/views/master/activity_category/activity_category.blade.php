@@ -16,9 +16,6 @@
             <div class="alert alert-danger">{{ session('err_msg') }}</div>
         @endif
 
-        @if ($total_persen != 100)
-            <div class="alert alert-warning" style="margin-top: 1rem;">Persentase total: {{ $total_persen }}%</div> 
-        @endif
         <!-- Add Order -->
         <div class="row">
             <div class="col-12">
@@ -33,10 +30,6 @@
                                     <tr>
                                         <th>No</th>
                                         <th>Kategori Aktivitas</th>
-                                        <th>Target Asmen</th>
-                                        <th>Target RPO</th>
-                                        <th>Target User</th>
-                                        <th>Persentase</th>
                                         <th>Status</th>
                                         <th>Aksi</th>
                                     </tr>
@@ -49,10 +42,6 @@
                                     <tr>
                                         <td>{{ $no++ }}</td>
                                         <td>{{ $item->NAME_AC }}</td>
-                                        <td>{{ $item->TGTLOCATION_AC }}</td>
-                                        <td>{{ $item->TGTREGIONAL_AC }}</td>
-                                        <td>{{ $item->TGTUSER_AC }}</td>
-                                        <td>{{ $item->PERCENTAGE_AC }}%</td>
                                         <td>
                                             @if ($item->deleted_at == NULL)
                                                 <i class="fa-solid fa-circle mr-2" style="color:#3CC13B;"></i>
@@ -63,7 +52,7 @@
                                             @endif
                                         </td>
                                         <td>
-                                            <button onclick="showMdlEdit('{{ $item->ID_AC }}', '{{ $item->NAME_AC }}', '{{ $item->TGTLOCATION_AC }}', '{{ $item->TGTREGIONAL_AC }}', '{{ $item->TGTUSER_AC }}',  '{{ $item->PERCENTAGE_AC }}', '{{ $item->deleted_at }}')" class="btn btn-primary btn-sm">
+                                            <button onclick="showMdlEdit('{{ $item->ID_AC }}', '{{ $item->NAME_AC }}', '{{ $item->deleted_at }}')" class="btn btn-primary btn-sm">
                                                 <i class="flaticon-381-edit-1"></i>
                                             </button>
                                         </td>
@@ -95,22 +84,6 @@
                     <input type="text" name="category_activity" id="mdlEdit_name" class="form-control" placeholder="Input nama kategori" required>
                 </div>
                 <div class="form-group">
-                    <label for="">Target Asmen</label>
-                    <input type="text" name="target_asm_act" id="mdlEdit_asm" class="form-control" placeholder="Input Target Regional" required>
-                </div>
-                <div class="form-group">
-                    <label for="">Target Regional</label>
-                    <input type="text" name="target_reg_act" id="mdlEdit_reg" class="form-control" placeholder="Input Target Regional" required>
-                </div>
-                <div class="form-group">
-                    <label for="">Target User</label>
-                    <input type="text" name="target_user_act" id="mdlEdit_user" class="form-control" placeholder="Input Target User" required>
-                </div>
-                <div class="form-group">
-                    <label for="">Persentase Aktivitas</label>
-                    <input type="text" name="percentage_activity" id="mdlEdit_percentage" class="form-control" placeholder="Input persentase" required>
-                </div>
-                <div class="form-group">
                     <label for="">Status</label>
                     <div class="form-group mb-0">
                         <label class="radio-inline mr-3"><input type="radio" id="status_enable" name="status" value="1" required> Enable</label>
@@ -135,13 +108,9 @@
 <script>
     $('#datatable').DataTable()
 
-    function showMdlEdit(id, name, targetasmen, targetreg, targetuser, percentage, status){
+    function showMdlEdit(id, name, status){
         $('#mdlEdit_id').val(id)
         $('#mdlEdit_name').val(name)
-        $('#mdlEdit_asm').val(targetasmen)
-        $('#mdlEdit_reg').val(targetreg)
-        $('#mdlEdit_user').val(targetuser)
-        $('#mdlEdit_percentage').val(percentage)
         if (status == null || status == '') {
             $('#status_enable').prop('checked', true)
         } else {
