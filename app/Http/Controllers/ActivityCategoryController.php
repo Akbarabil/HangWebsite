@@ -14,7 +14,6 @@ class ActivityCategoryController extends Controller
         $data['sidebar']            = "master";
         $data['sidebar2']           = "activity-category";
         $data['activity_category']  = ActivityCategory::all();
-        $data['total_persen']       = ActivityCategory::where('deleted_at', null)->sum('PERCENTAGE_AC');
 
         return view('master.activity_category.activity_category', $data);
     }
@@ -22,10 +21,6 @@ class ActivityCategoryController extends Controller
     public function update(Request $req)
     {
         $validator = Validator::make($req->all(), [
-            'category_activity'     => 'required',
-            'target_reg_act'        => 'required',
-            'target_user_act'       => 'required',
-            'percentage_activity'   => 'required',
             'status'                => 'required',
         ], [
             'required' => 'Data tidak boleh kosong!',
@@ -35,31 +30,17 @@ class ActivityCategoryController extends Controller
             return redirect('master/activity-category')->withErrors($validator);
         }
 
-
-        $total   =   ActivityCategory::where('deleted_at', null)
-            ->whereNotIn('ID_AC', [$req->input('id')])
-            ->sum('PERCENTAGE_AC');
-
-        $cek = $total + $req->input('percentage_activity');
-        if ($cek > 100) {
-            return redirect('master/activity-category')->with('err_msg', 'Persentase kategori aktivitas melebihi persentase, mohon kurangi persentase saat input!');
-        } else {
-            $category_activity                  = ActivityCategory::find($req->input('id'));
-            $category_activity->NAME_AC         = $req->input('category_activity');
-            $category_activity->TGTLOCATION_AC  = $req->input('target_asm_act');
-            $category_activity->TGTREGIONAL_AC  = $req->input('target_reg_act');
-            $category_activity->TGTUSER_AC      = $req->input('target_user_act');
-            $category_activity->PERCENTAGE_AC   = $req->input('percentage_activity');
-            $category_activity->deleted_at      = $req->input('status') == '1' ? NULL : date('Y-m-d H:i:s');
-            try {
-                $category_activity->save();
-            } catch (\Illuminate\Database\QueryException $e) {
-                $errorCode = $e->errorInfo[1];
-                if ($errorCode == '1062') {
-                    return redirect('master/activity-category')->with('err_msg', 'Kategori Aktivitas tidak boleh sama!');
-                }
+        $category_activity                  = ActivityCategory::find($req->input('id'));
+        $category_activity->NAME_AC         = $req->input('category_activity');
+        $category_activity->deleted_at      = $req->input('status') == '1' ? NULL : date('Y-m-d H:i:s');
+        try {
+            $category_activity->save();
+        } catch (\Illuminate\Database\QueryException $e) {
+            $errorCode = $e->errorInfo[1];
+            if ($errorCode == '1062') {
+                return redirect('master/activity-category')->with('err_msg', 'Kategori Aktivitas tidak boleh sama!');
             }
-            return redirect('master/activity-category')->with('succ_msg', 'Berhasil mengubah data kategori aktivitas!');
         }
+        return redirect('master/activity-category')->with('succ_msg', 'Berhasil mengubah data kategori aktivitas!');
     }
 }

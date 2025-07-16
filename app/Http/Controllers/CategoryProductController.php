@@ -15,7 +15,6 @@ class CategoryProductController extends Controller
         $data['sidebar2']   = "category-product";
         $data['category_product']      = CategoryProduct::all();
         $data['groupings'] = Grouping::all();
-        $data['total_persen']   =   CategoryProduct::where('deleted_at', null)->sum('PERCENTAGE_PC');
 
         return view('master.product.category_product', $data);
     }
@@ -23,10 +22,6 @@ class CategoryProductController extends Controller
     public function store(Request $req){
         $validator = Validator::make($req->all(), [
             'category_product'      => 'required',
-            'target_asm_prod'       => 'required',
-            'target_reg_prod'       => 'required',
-            'target_user_prod'      => 'required',
-            'percentage_product'    => 'required',
             'status'                => 'required',
             'group_product'         => 'required',
         ], [
@@ -38,42 +33,25 @@ class CategoryProductController extends Controller
         }
     
         // Check total percentage for the selected group
-        $total = CategoryProduct::where('deleted_at', null)
-            ->where('ID_GROUP', $req->input('group_product'))
-            ->sum('PERCENTAGE_PC');
-    
-        $total += $req->input('percentage_product');
-    
-        if ($total > 100) {
-            return redirect('master/category-product')->with('err_msg', 'Persentase kategori produk dalam grup melebihi 100%, mohon kurangi persentase saat input!');
-        } else {
-            $category_product = new CategoryProduct();
-            $category_product->NAME_PC = $req->input('category_product');
-            $category_product->TGTLOCATION_PC = $req->input('target_asm_prod');
-            $category_product->TGTREGIONAL_PC = $req->input('target_reg_prod');
-            $category_product->TGTUSER_PC = $req->input('target_user_prod');
-            $category_product->PERCENTAGE_PC = $req->input('percentage_product');
-            $category_product->GROUP_PRODUCT = $req->input('group_product');
-            $category_product->deleted_at = $req->input('status') == '1' ? NULL : date('Y-m-d H:i:s');
-            try {
-                $category_product->save();
-            } catch (\Illuminate\Database\QueryException $e) {
-                $errorCode = $e->errorInfo[1];
-                if($errorCode == '1062'){
-                    return redirect('master/category-product')->with('err_msg', 'Kategori Produk tidak boleh sama!');
-                }
+        
+        $category_product = new CategoryProduct();
+        $category_product->NAME_PC = $req->input('category_product');
+        $category_product->GROUP_PRODUCT = $req->input('group_product');
+        $category_product->deleted_at = $req->input('status') == '1' ? NULL : date('Y-m-d H:i:s');
+        try {
+            $category_product->save();
+        } catch (\Illuminate\Database\QueryException $e) {
+            $errorCode = $e->errorInfo[1];
+            if($errorCode == '1062'){
+                return redirect('master/category-product')->with('err_msg', 'Kategori Produk tidak boleh sama!');
             }
-            return redirect('master/category-product')->with('succ_msg', 'Berhasil menambah data kategori produk!');
         }
+        return redirect('master/category-product')->with('succ_msg', 'Berhasil menambah data kategori produk!');
     }
 
     public function update(Request $req){
         $validator = Validator::make($req->all(), [
             'category_product'      => 'required',
-            'target_asm_prod'       => 'required',
-            'target_reg_prod'       => 'required',
-            'target_user_prod'      => 'required',
-            'percentage_product'    => 'required',
             'status'                => 'required',
             'group_product'         => 'required',
         ], [
@@ -96,10 +74,6 @@ class CategoryProductController extends Controller
         } else {
             $category_product = CategoryProduct::find($req->input('id'));
             $category_product->NAME_PC = $req->input('category_product');
-            $category_product->TGTLOCATION_PC = $req->input('target_asm_prod');
-            $category_product->TGTREGIONAL_PC = $req->input('target_reg_prod');
-            $category_product->TGTUSER_PC = $req->input('target_user_prod');
-            $category_product->PERCENTAGE_PC = $req->input('percentage_product');
             $category_product->GROUP_PRODUCT = $req->input('group_product');
             $category_product->deleted_at = $req->input('status') == '1' ? NULL : date('Y-m-d H:i:s');
             $category_product->save();
